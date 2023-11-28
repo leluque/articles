@@ -17,6 +17,7 @@ public class ProfilerAgent {
     public static boolean shutdownAdded = false;
 
     public static void premain(String agentArgs, Instrumentation inst) {
+        assert(CallLog.INSTANCE != null);
         inst.addTransformer(new ClassFileTransformer() {
             @Override
             public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
@@ -27,9 +28,10 @@ public class ProfilerAgent {
                     return classfileBuffer;
                 }
 
+                String fullyQualifiedName = className == null ? null : className.replace('/','.');
                 if (loader == null
                     || className == null
-                    || Stream.of(targetPackages).noneMatch(className::startsWith)
+                    || Stream.of(targetPackages).noneMatch(fullyQualifiedName::startsWith)
                     || className.contains("$$Lambda$")
                     || className.contains("$$")) {
                     return classfileBuffer;
